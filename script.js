@@ -40,6 +40,7 @@ function updateUI() {
 
 function resetTest() {
   clearInterval(interval);
+  spamKeys = [];
 
   totalTime = Math.max(1, parseInt(timeInput.value) || 1);
 
@@ -48,7 +49,7 @@ function resetTest() {
 
   running = true;
   started = false;
-
+  spamKeys = [];
   heldKeys.clear();
 
   updateUI();
@@ -91,17 +92,37 @@ function finishTest() {
 }
 
 resetTest();
+/*
+  Dynamic spam keys
+  First 2 unique keys pressed
+  become the spam keys
+*/
+let spamKeys = [];
 
 document.addEventListener("keydown", (e) => {
   const key = e.key.toLowerCase();
 
-  if (key !== "v" && key !== "n") return;
   if (!running) return;
 
   /*
-    Prevent holding key
+    Ignore repeats from holding
   */
   if (heldKeys.has(key)) return;
+
+  /*
+    Pick first 2 unique keys
+  */
+  if (!spamKeys.includes(key)) {
+    if (spamKeys.length < 2) {
+      spamKeys.push(key);
+      console.log("Spam keys:", spamKeys);
+    }
+  }
+
+  /*
+    Only allow the selected 2 keys
+  */
+  if (!spamKeys.includes(key)) return;
 
   heldKeys.add(key);
 
@@ -115,33 +136,11 @@ document.addEventListener("keydown", (e) => {
   const now = performance.now();
 
   /*
-    If V and N are hit almost
-    simultaneously, count once
+    Merge near-simultaneous presses
   */
   if (now - lastAcceptedPress > MERGE_WINDOW) {
     clicks++;
     lastAcceptedPress = now;
-
     updateUI();
   }
-});
-
-document.addEventListener("keyup", (e) => {
-  heldKeys.delete(e.key.toLowerCase());
-});
-
-/*
-  SPACE = restart
-*/
-document.addEventListener("keydown", (e) => {
-  if (e.code === "Space" && !running) {
-    resetTest();
-  }
-});
-
-/*
-  Live update timer amount
-*/
-timeInput.addEventListener("change", () => {
-  resetTest();
 });
