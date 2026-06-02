@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>V & N CPS Test</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>⌨️ V + N CPS Test</h1>
+
+    <div class="controls">
+      <label>Test Time:</label>
+
+<input
+  type="number"
+  id="timeInput"
+  min="1"
+  value="10"
+  placeholder="Seconds"
+/>
+
+      <button id="startBtn">Start</button>
+    </div>
+
+    <div class="stats">
+      <div class="card">
+        <h2>Time Left</h2>
+        <p id="timer">10</p>
+      </div>
+
+      <div class="card">
+        <h2>Clicks</h2>
+        <p id="clicks">0</p>
+      </div>
+
+      <div class="card">
+        <h2>CPS</h2>
+        <p id="cps">0.00</p>
+      </div>
+    </div>
+
+    <div class="info">
+      Spam the <span>V</span> and <span>N</span> keys.<br>
+      Pressing both at the exact same time only counts once.
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Time</th>
+          <th>Clicks</th>
+          <th>CPS</th>
+        </tr>
+      </thead>
+
+      <tbody id="historyBody"></tbody>
+    </table>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
