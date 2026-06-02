@@ -3,6 +3,7 @@ const clicksText = document.getElementById("clicks");
 const cpsText = document.getElementById("cps");
 const historyBody = document.getElementById("historyBody");
 const timeInput = document.getElementById("timeInput");
+const startBtn = document.getElementById("startBtn");
 
 let clicks = 0;
 let totalTime = 10;
@@ -14,16 +15,15 @@ let started = false;
 let interval = null;
 let historyCount = 0;
 
-/*
-  Prevent hold spam
-*/
 const heldKeys = new Set();
 
-/*
-  Prevent V+N same-frame doubles
-*/
 let lastAcceptedPress = 0;
 const MERGE_WINDOW = 25;
+
+/*
+  First 2 unique keys
+*/
+let spamKeys = [];
 
 function updateUI() {
   clicksText.textContent = clicks;
@@ -40,19 +40,27 @@ function updateUI() {
 
 function resetTest() {
   clearInterval(interval);
-  spamKeys = [];
 
   totalTime = Math.max(1, parseInt(timeInput.value) || 1);
 
   clicks = 0;
   timeLeft = totalTime;
 
-  running = true;
+  running = false;
   started = false;
+
   spamKeys = [];
   heldKeys.clear();
+  lastAcceptedPress = 0;
 
   updateUI();
+}
+
+function startTest() {
+  if (running) return;
+
+  running = true;
+  started = false;
 }
 
 function startTimer() {
@@ -92,43 +100,39 @@ function finishTest() {
 }
 
 resetTest();
-/*
-  Dynamic spam keys
-  First 2 unique keys pressed
-  become the spam keys
-*/
-let spamKeys = [];
 
+/*
+  Start button
+*/
+startBtn.addEventListener("click", () => {
+  resetTest();
+  startTest();
+});
+
+/*
+  Keyboard input
+*/
 document.addEventListener("keydown", (e) => {
   const key = e.key.toLowerCase();
 
   if (!running) return;
-
-  /*
-    Ignore repeats from holding
-  */
   if (heldKeys.has(key)) return;
 
   /*
-    Pick first 2 unique keys
+    Pick first 2 keys
   */
-  if (!spamKeys.includes(key)) {
-    if (spamKeys.length < 2) {
-      spamKeys.push(key);
-      console.log("Spam keys:", spamKeys);
-    }
+  if (!spamKeys.includes(key) && spamKeys.length < 2) {
+    spamKeys.push(key);
+    console.log("Spam keys:", spamKeys);
   }
 
   /*
-    Only allow the selected 2 keys
+    Only selected keys work
   */
   if (!spamKeys.includes(key)) return;
 
   heldKeys.add(key);
 
-  /*
-    Start on first click
-  */
   if (!started) {
     startTimer();
   }
@@ -136,11 +140,35 @@ document.addEventListener("keydown", (e) => {
   const now = performance.now();
 
   /*
-    Merge near-simultaneous presses
+    Merge same-frame presses
   */
   if (now - lastAcceptedPress > MERGE_WINDOW) {
     clicks++;
     lastAcceptedPress = now;
     updateUI();
   }
+});
+
+/*
+  Release held key
+*/
+document.addEventListener("keyup", (e) => {
+  heldKeys.delete(e.key.toLowerCase());
+});
+
+/*
+  Space = restart after finish
+*/
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Space" && !running) {
+    resetTest();
+    startTest();
+  }
+});
+
+/*
+  Change time
+*/
+timeInput.addEventListener("change", () => {
+  resetTest();
 });
